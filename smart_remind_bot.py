@@ -34,7 +34,7 @@ def get_weather():
     except:
         return "❌ Ob-havo ma'lumotlarini olib bo'lmadi."
 
-# AVTOMATIK YUBORISH
+# KANALGA AVTOMATIK YUBORISH
 def auto_weather():
     weather_text = get_weather()
     try:
@@ -42,8 +42,8 @@ def auto_weather():
     except:
         pass
 
+# VAQT REJASI (08:00 va 20:00)
 def run_schedule():
-    # Toshkent vaqti bilan 08:00 va 20:00
     schedule.every().day.at("08:00").do(auto_weather)
     schedule.every().day.at("20:00").do(auto_weather)
     while True:
@@ -55,12 +55,19 @@ def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn = types.KeyboardButton("🌤 Ob-havoni ko'rish")
     markup.add(btn)
-    bot.send_message(message.chat.id, "👋 Salom! Yangi botingiz ishga tushdi.\n\nEslatma uchun: '5m Dars' deb yozing.", reply_markup=markup)
+    
+    welcome_text = (
+        "👋 Assalomu alaykum! Men aqlli yordamchiman.\n\n"
+        "⏰ **Eslatma uchun:** '5m Dars qilish' deb yozing.\n"
+        "🌤 **Ob-havo uchun:** Pastdagi tugmani bosing."
+    )
+    bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text == "🌤 Ob-havoni ko'rish")
 def send_weather(message):
     bot.send_message(message.chat.id, get_weather(), parse_mode='Markdown')
 
+# ESLATMA FUNKSIYASI
 def send_reminder(chat_id, text, seconds):
     time.sleep(seconds)
     try:
@@ -77,10 +84,13 @@ def send_reminder(chat_id, text, seconds):
 def set_reminder(message):
     try:
         parts = message.text.split(' ', 1)
-        minutes = int(parts[0].replace('m', ''))
-        task = parts[1]
-        bot.reply_to(message, f"✅ {minutes} minutga o'rnatildi!")
-        threading.Thread(target=send_reminder, args=(message.chat.id, task, minutes*60)).start()
+        time_part = parts[0].lower()
+        task_text = parts[1]
+        
+        if 'm' in time_part:
+            minutes = int(time_part.replace('m', ''))
+            bot.reply_to(message, f"✅ Kelishdik! {minutes} minutdan keyin eslataman.")
+            threading.Thread(target=send_reminder, args=(message.chat.id, task_text, minutes*60)).start()
     except:
         pass
 
