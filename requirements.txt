@@ -1,2 +1,5 @@
 pyTelegramBotAPI
 gTTS
+requests
+schedule
+pytz
